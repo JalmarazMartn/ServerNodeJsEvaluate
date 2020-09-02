@@ -12,11 +12,11 @@ const server = http.createServer((request, response) => {
               response.writeHead(200, {'Content-Type': 'text/plain'});   
               //console.log(AlmostSafe(SQLToJSBooleanNotation(boolexpr)));
               //console.log(IsTrue(boolexpr));              
+              console.log('Input ' + boolexpr + '=' + IsTrue(boolexpr));
               response.end(boolexpr+ ' ' + AlmostSafe(boolexpr) + '==>' + IsTrue(boolexpr))});       
             })       
-
-server.listen(8080) 
-
+server.listen(8080);
+console.log('Service up');
 function IsTrue(inputexpr='textdef'){
 try{
 var inputexprModified = SQLToJSBooleanNotation(inputexpr);
