@@ -16,6 +16,12 @@ page 69015 "Call Evaluation Server"
                     ApplicationArea = All;
 
                 }
+                field(UrlScreen; UrlScreen)
+                {
+                    Caption = 'Url Screen server';
+                    ApplicationArea = all;
+
+                }
             }
         }
     }
@@ -33,7 +39,7 @@ page 69015 "Call Evaluation Server"
                 PromotedIsBig = true;
                 trigger OnAction()
                 begin
-                    EvaluateExprRepl();
+                    EvaluateExprServer(UrlDestinoRepl);
                 end;
             }
             action(EvaluateIBM)
@@ -45,7 +51,19 @@ page 69015 "Call Evaluation Server"
                 PromotedIsBig = true;
                 trigger OnAction()
                 begin
-                    EvaluateExprIBMCloud();
+                    EvaluateExprServer(UrlDestinoIBM);
+                end;
+            }
+            action(EvaluateLocal)
+            {
+                ApplicationArea = All;
+                Caption = 'Evaluate With input Url';
+                Image = "8ball";
+                Promoted = true;
+                PromotedIsBig = true;
+                trigger OnAction()
+                begin
+                    EvaluateExprServer(UrlScreen);
                 end;
             }
 
@@ -54,10 +72,12 @@ page 69015 "Call Evaluation Server"
 
     var
         ExprToEvaluate: Text;
+        UrlScreen: Text;
         UrlDestinoRepl: Label 'https://istrueevaluator.jalmarazmartn.repl.co/Evaluate';
         UrlDestinoIBM: Label 'https://3e71fc70.eu-gb.apigw.appdomain.cloud/evaluate-bool-expression/Evaluate';
+        UrlDestinoLocal: Label 'http://localhost:8080';
 
-    local procedure EvaluateExprRepl()
+    local procedure EvaluateExprServer(UrlDestino: Text);
     var
         ClientExpr: HttpClient;
         RequestExpr: HttpRequestMessage;
@@ -66,7 +86,7 @@ page 69015 "Call Evaluation Server"
         ReqBody: HttpContent;
         TextoResponse: Text;
     begin
-        RequestExpr.SetRequestUri(UrlDestinoRepl);
+        RequestExpr.SetRequestUri(UrlDestino);
         RequestExpr.Method('POST');
         ReqBody.WriteFrom(StrSubstNo('{"Formula":"%1"}', ExprToEvaluate));
         ReqBody.GetHeaders(Header);
@@ -78,24 +98,4 @@ page 69015 "Call Evaluation Server"
         Message(TextoResponse);
     end;
 
-    local procedure EvaluateExprIBMCloud()
-    var
-        ClientExpr: HttpClient;
-        RequestExpr: HttpRequestMessage;
-        Header: HttpHeaders;
-        Response: HttpResponseMessage;
-        ReqBody: HttpContent;
-        TextoResponse: Text;
-    begin
-        RequestExpr.SetRequestUri(UrlDestinoIBM);
-        RequestExpr.Method('POST');
-        ReqBody.WriteFrom(StrSubstNo('{"Formula":"%1"}', ExprToEvaluate));
-        ReqBody.GetHeaders(Header);
-        Header.Remove('Content-Type');
-        Header.Add('Content-Type', 'application/json');
-        RequestExpr.Content(ReqBody);
-        ClientExpr.send(RequestExpr, Response);
-        Response.Content.ReadAs(TextoResponse);
-        Message(TextoResponse);
-    end;
 }

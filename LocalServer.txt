@@ -1,0 +1,62 @@
+OBJECT Codeunit 69000 Post Http
+{
+  OBJECT-PROPERTIES
+  {
+    Date=03/09/20;
+    Time=18:06:11;
+    Modified=Yes;
+    Version List=Prueba servicio local;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            MESSAGE(PostHttpRequest('http://192.168.1.154:8080','(1+1=2) OR (1=2)'));
+          END;
+
+  }
+  CODE
+  {
+
+    LOCAL PROCEDURE PostHttpRequest@16(NotificationUrl@1000 : Text;JSONText@1170170000 : Text) ResponseText : Text;
+    VAR
+      TypeHelper@1003 : Codeunit 10;
+      HttpWebRequest@1007 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Net.HttpWebRequest";
+      HttpWebResponse@1006 : DotNet "'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Net.HttpWebResponse";
+      RequestStr@1005 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.Stream";
+      StreamWriter@1004 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.IO.StreamWriter";
+      Encoding@1008 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Text.Encoding";
+      ResponseInStream@1170170001 : InStream;
+    BEGIN
+      HttpWebRequest := HttpWebRequest.Create(NotificationUrl);
+      HttpWebRequest.Method := 'POST';
+      HttpWebRequest.ContentType('application/json');
+
+      RequestStr := HttpWebRequest.GetRequestStream;
+      StreamWriter := StreamWriter.StreamWriter(RequestStr,Encoding.ASCII);
+      StreamWriter.Write(JSONText);
+      StreamWriter.Flush;
+      StreamWriter.Close;
+      StreamWriter.Dispose;
+
+      HttpWebResponse := HttpWebRequest.GetResponse;
+      CreateInstream(ResponseInStream);
+      HttpWebResponse.GetResponseStream.CopyTo(ResponseInStream);
+      ResponseInStream.READTEXT(ResponseText);
+      HttpWebResponse.Close; // close connection
+      HttpWebResponse.Dispose; // cleanup of IDisposable
+    END;
+
+    [External]
+    PROCEDURE CreateInstream@17(VAR InStr@1000 : InStream);
+    VAR
+      TempBlob@1001 : Record 99008535;
+    BEGIN
+      TempBlob.INIT;
+      TempBlob.Blob.CREATEINSTREAM(InStr);
+    END;
+
+    BEGIN
+    END.
+  }
+}
+
