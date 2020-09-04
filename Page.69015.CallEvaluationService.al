@@ -34,36 +34,39 @@ page 69015 "Call Evaluation Server"
             {
                 ApplicationArea = All;
                 Caption = 'Evaluate';
+                ToolTip = 'Solve the expression with an API hosted in Repl';
                 Image = "8ball";
                 Promoted = true;
                 PromotedIsBig = true;
                 trigger OnAction()
                 begin
-                    EvaluateExprServer(UrlDestinoRepl);
+                    EvaluateExprServer(UrlDestinoRepl, StrSubstNo('{"Formula":"%1"}', ExprToEvaluate));
                 end;
             }
             action(EvaluateIBM)
             {
                 ApplicationArea = All;
                 Caption = 'Evaluate With IBM Cloud';
+                ToolTip = 'Solve the expression with an IBM Cloud API';
                 Image = "8ball";
                 Promoted = true;
                 PromotedIsBig = true;
                 trigger OnAction()
                 begin
-                    EvaluateExprServer(UrlDestinoIBM);
+                    EvaluateExprServer(UrlDestinoIBM, StrSubstNo('{"Formula":"%1"}', ExprToEvaluate));
                 end;
             }
             action(EvaluateLocal)
             {
                 ApplicationArea = All;
                 Caption = 'Evaluate With input Url';
+                ToolTip = 'Solve the expression with API address typed in textbox';
                 Image = "8ball";
                 Promoted = true;
                 PromotedIsBig = true;
                 trigger OnAction()
                 begin
-                    EvaluateExprServer(UrlScreen);
+                    EvaluateExprServer(UrlScreen, ExprToEvaluate);
                 end;
             }
 
@@ -77,7 +80,7 @@ page 69015 "Call Evaluation Server"
         UrlDestinoIBM: Label 'https://3e71fc70.eu-gb.apigw.appdomain.cloud/evaluate-bool-expression/Evaluate';
         UrlDestinoLocal: Label 'http://localhost:8080';
 
-    local procedure EvaluateExprServer(UrlDestino: Text);
+    local procedure EvaluateExprServer(UrlDestino: Text; BodyText: Text);
     var
         ClientExpr: HttpClient;
         RequestExpr: HttpRequestMessage;
@@ -88,7 +91,7 @@ page 69015 "Call Evaluation Server"
     begin
         RequestExpr.SetRequestUri(UrlDestino);
         RequestExpr.Method('POST');
-        ReqBody.WriteFrom(StrSubstNo('{"Formula":"%1"}', ExprToEvaluate));
+        ReqBody.WriteFrom(BodyText);
         ReqBody.GetHeaders(Header);
         Header.Remove('Content-Type');
         Header.Add('Content-Type', 'application/json');
